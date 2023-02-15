@@ -23,6 +23,14 @@ def fetch(cur, table, cond=None):
         return cur.execute(query).fetchall()
 
 def insert(cur, table, keys, value):
-    if type(keys) != list:
-        keys = list(keys)
-    return cur.executemany("INSERT INTO {} VALUES{}".format(table, keys), value)
+    query = "INSERT INTO {}{} VALUES {}".format(table, keys, value)
+    print(query)
+    return cur.execute(query)
+
+def update(cur, table, sett, cond):
+    query = "UPDATE {} SET {} WHERE {}".format(table, sett, cond)
+    try:
+        cur.execute(query)
+        return True
+    except:
+        return False
