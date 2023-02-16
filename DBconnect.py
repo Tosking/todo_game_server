@@ -18,11 +18,12 @@ def fetch(cur,  table, cond=None,row='*'):
     if cond != None:
         query += " WHERE {}".format(cond)
     print(query)
-    result = cur.execute(query)
+    cur.execute(query)
+    result = cur.fetchall()
     if result == None:
-        return None
+        return False
     else:
-        return cur.execute(query).fetchall()
+        return result[0]
 
 def insert(cur, con, table, keys, value):
     query = "INSERT INTO {}{} VALUES {}".format(table, keys, value)

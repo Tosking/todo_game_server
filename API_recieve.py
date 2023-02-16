@@ -29,3 +29,16 @@ def register():
         return "true"
     else:
         return "false"
+
+@app.route('/get/list', methods=['POST'])
+def get_list():
+    idd = request.form['id']
+    user = db.fetch(cur, 'user', cond='id = {}'.format(idd))
+    print(user)
+    if request.form['token'] != user[1]:
+        return '0'
+    if not user:
+        listt = db.fetch(cur, 'list', cond='user = {}'.format(user['id']))
+        return jsonify(listt)
+    else:
+        return '0'
