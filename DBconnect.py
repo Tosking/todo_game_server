@@ -45,6 +45,6 @@ def update(cur, table, sett, cond):
 
 def get_token(cur,expire_time=24):
     expire_delta = timedelta(expire_time)
-    id_user = fetch(cur,'user',row='id')
-    token = create_access_token(identity = id_user,expires_delta=expire_delta)
+    #id_user = fetch(cur,'user',row='id')
+    token = create_access_token(identity = 'id',expires_delta=expire_delta)
     return token
