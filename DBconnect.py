@@ -8,7 +8,7 @@ def conn():
         passwd = "VVbUPXbt4SFDOPOFANMBBkBd",
         database= "ais_sinkevich1858_game_todo"
     )
-    cur = con.cursor()
+    cur = con.cursor(buffered=True)
     return cur, con
 
 def fetch(cur, table, cond=None):
@@ -22,10 +22,16 @@ def fetch(cur, table, cond=None):
     else:
         return cur.execute(query).fetchall()
 
-def insert(cur, table, keys, value):
+def insert(cur, con, table, keys, value):
     query = "INSERT INTO {}{} VALUES {}".format(table, keys, value)
     print(query)
-    return cur.execute(query)
+    cur.execute(query)
+    con.commit()
+    if cur.rowcount != 0:
+        return True
+    else:
+        return False
+
 
 def update(cur, table, sett, cond):
     query = "UPDATE {} SET {} WHERE {}".format(table, sett, cond)

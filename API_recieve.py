@@ -23,7 +23,7 @@ def register():
     password = hashlib.sha256(request.form['password'].encode()).hexdigest()
     name = request.form['name']
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
-    result = db.insert(cur, "user", "(name, email, password, creation_date)", str((name, email, password, creation_date)))
+    result = db.insert(cur, con, "user", "(name, email, password, creation_date)", str((name, email, password, creation_date)))
     if result:
         return "true"
     else:
