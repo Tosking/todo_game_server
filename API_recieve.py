@@ -6,7 +6,6 @@ import time
 
 app = Blueprint('api_recieve', __name__)
 cur, con = db.conn()
-
 @app.route('/login', methods=['POST'])
 def login():
     login = request.form['email']
@@ -24,6 +23,8 @@ def register():
     name = request.form['name']
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
     result = db.insert(cur, con, "user", "(name, email, password, creation_date)", str((name, email, password, creation_date)))
+    token = db.get_token(cur)
+    print(token)
     if result:
         return "true"
     else:

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import mysql.connector as mysql
+from flask_jwt_extended import create_access_token
+from datetime import timedelta
 
 def conn():
     con = mysql.connect(
@@ -11,8 +13,8 @@ def conn():
     cur = con.cursor(buffered=True)
     return cur, con
 
-def fetch(cur, table, cond=None):
-    query = "SELECT * FROM {}".format(table)
+def fetch(cur,  table, cond=None,row='*'):
+    query = "SELECT {} FROM {}".format(row,table)
     if cond != None:
         query += " WHERE {}".format(cond)
     print(query)
@@ -40,3 +42,9 @@ def update(cur, table, sett, cond):
         return True
     except:
         return False
+
+def get_token(cur,expire_time=24):
+    expire_delta = timedelta(expire_time)
+    id_user = fetch(cur,'user',row='id')
+    token = create_access_token(identity = id_user,expires_delta=expire_delta)
+    return token
