@@ -58,3 +58,27 @@ def create_list():
         return str(result)
     else:
         return "2"
+
+@app.route('/create/task', methods=['POST'])
+def create_task():
+    keys = "(name, list, creation_date"
+    id = request.form["id"]
+    token = get_token(id)
+    name = request.form["name"]
+    creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
+    listt = request.form["list"]
+    value = [name, listt, creation_date]
+    if "task" in request.form:
+        task = request.form["task"]
+        keys += ", task"
+        value.append(task)
+    if "content" in request.form:
+        content = request.form["content"]
+        keys += ", content"
+        value.append(content)
+    if "deadline" in request.form:
+        deadline = request.form["deadline"]
+        keys += ", deadline"
+        value.append(deadline)
+    keys += ")"
+    return db.insert("task", keys, str(list(value)))

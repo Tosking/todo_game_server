@@ -57,11 +57,11 @@ def update(table, sett, cond):
         con.close()
         return False
 
-def get_token(expire_time=24):
+def get_token(id ,expire_time=24):
     cur, con = conn()
     expire_delta = timedelta(expire_time)
     #id_user = fetch(cur,'user',row='id')
-    token = create_access_token(identity = 'id',expires_delta=expire_delta)
+    token = create_access_token(identity = id,expires_delta=expire_delta)
     cur.close()
     con.close()
     return token
