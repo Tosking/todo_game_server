@@ -3,7 +3,7 @@ from flask import *
 import DBconnect as db
 import hashlib
 import time
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token,get_jwt_identity,jwt_required
 from datetime import timedelta
 
 app = Blueprint('api_recieve', __name__)
@@ -14,10 +14,11 @@ def login():
     login = request.form['email']
     password = hashlib.sha256(request.form['password'].encode()).hexdigest()
     result = db.fetch("user", "email = '{}' AND password = '{}'".format(login, password))
+    access_token = create_access_token(identity=login)
     if result != None:
-        return "true"
+        return jsonify(access_token=access_token)
     else:
-        return "false"
+        return jsonify("Wrong username or password"), 401
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -29,11 +30,12 @@ def register():
     result = db.insert("user", "(name, email, password, creation_date, token)", str((name, email, password, creation_date,token)))
     print(token)
     if result:
-        return "true"
+        return "Access registration",200
     else:
-        return "false"
+        return jsonify("Wrong username or password"), 401
 
 @app.route('/get/list', methods=['POST'])
+@jwt_required()
 def get_list():
     idd = request.form['id']
     user = db.fetch('user', cond='id = {}'.format(idd))
