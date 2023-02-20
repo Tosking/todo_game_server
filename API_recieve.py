@@ -3,9 +3,12 @@ from flask import *
 import DBconnect as db
 import hashlib
 import time
+from flask_jwt_extended import create_access_token
+from datetime import timedelta
 
 app = Blueprint('api_recieve', __name__)
 con = db.conn()
+
 @app.route('/login', methods=['POST'])
 def login():
     login = request.form['email']
@@ -22,7 +25,7 @@ def register():
     password = hashlib.sha256(request.form['password'].encode()).hexdigest()
     name = request.form['name']
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
-    token = db.get_token()
+    token = db.get_token(email)
     result = db.insert("user", "(name, email, password, creation_date, token)", str((name, email, password, creation_date,token)))
     print(token)
     if result:
@@ -63,7 +66,7 @@ def create_list():
 def create_task():
     keys = "(name, list, creation_date"
     id = request.form["id"]
-    token = get_token(id)
+    token = create_access_token(identity = id,expires_delta=24)
     name = request.form["name"]
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
     listt = request.form["list"]
