@@ -37,9 +37,12 @@ def register():
 @app.route('/get/list', methods=['POST'])
 @jwt_required()
 def get_list():
+    login = get_jwt_identity()
     idd = request.form['id']
     user = db.fetch('user', cond='id = {}'.format(idd))
-    print(user)
+    if(login !=user[3]):
+        return "Wrong!",400
+    print("User:",user)
     if user:
         if request.form['token'] != user[1]:
             return '2'
@@ -50,6 +53,7 @@ def get_list():
             return '0'
 
 @app.route('/create/list', methods=['POST'])
+@jwt_required()
 def create_list():
     idd = request.form['id']
     user = db.fetch('user', cond='id = {}'.format(idd))
@@ -65,6 +69,7 @@ def create_list():
         return "2"
 
 @app.route('/create/task', methods=['POST'])
+@jwt_required()
 def create_task():
     keys = "(name, list, creation_date"
     id = request.form["id"]
