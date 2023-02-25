@@ -56,9 +56,20 @@ def update(table, sett, cond):
         cur.close()
         con.close()
         return False
+def delete(table,cond):
+    cur,con = conn()
+    query = "DELETE FROM {} WHERE {}".format(table,cond)
+    try:
+        cur.execute(query)
+        cur.close()
+        con.close()
+        return True
+    except:
+        cur.close()
+        con.close()
+        return False
 
 def get_token(id ,expire_time=24):
     expire_delta = timedelta(expire_time)
-    #id_user = fetch(cur,'user',row='id')
     token = create_access_token(identity = id,expires_delta=expire_delta)
     return token

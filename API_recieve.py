@@ -14,7 +14,7 @@ def login():
     login = request.form['email']
     password = hashlib.sha256(request.form['password'].encode()).hexdigest()
     result = db.fetch("user", "email = '{}' AND password = '{}'".format(login, password))
-    access_token = create_access_token(identity=login)
+    access_token =db.get_token(login)
     if result != None:
         return jsonify(access_token=access_token)
     else:
@@ -26,9 +26,9 @@ def register():
     password = hashlib.sha256(request.form['password'].encode()).hexdigest()
     name = request.form['name']
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
-    token = db.get_token(email)
-    result = db.insert("user", "(name, email, password, creation_date, token)", str((name, email, password, creation_date,token)))
-    print(token)
+    access_token = db.get_token(email)
+    result = db.insert("user", "(name, email, password, creation_date, token)", str((name, email, password, creation_date,access_token)))
+    print(access_token)
     if result:
         return "Access registration",200
     else:
