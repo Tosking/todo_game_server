@@ -9,6 +9,13 @@ from datetime import timedelta
 app = Blueprint('api_recieve', __name__)
 con = db.conn()
 
+'''
+TODO:
+1)удаление листа
+2)удаление задачи
+3)получение задачи
+'''
+
 @app.route('/login', methods=['POST'])
 def login():
     login = request.form['email']
@@ -92,3 +99,18 @@ def create_task():
         value.append(deadline)
     keys += ")"
     return db.insert("task", keys, str(list(value)))
+
+@app.route('/delete/list', methods=['POST'])
+@jwt_required()
+def delete_list():
+    None
+
+@app.route('/delete/task', methods=['POST'])
+@jwt_required()
+def delete_list():
+    None
+
+@app.route('/get/task', methods=['POST'])
+@jwt_required()
+def delete_list():
+    None
