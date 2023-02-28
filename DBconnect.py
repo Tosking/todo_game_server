@@ -15,9 +15,9 @@ def conn():
 
 def fetch(table, cond=None,row='*'):
     cur, con = conn()
-    query = "SELECT {} FROM {}".format(row,table)
+    query = "SELECT %s FROM %s", (row, table, )
     if cond != None:
-        query += " WHERE {}".format(cond)
+        query += " WHERE %s", (cond, )
     print(query)
     cur.execute(query)
     result = cur.fetchall()
@@ -30,7 +30,7 @@ def fetch(table, cond=None,row='*'):
 
 def insert(table, keys, value):
     cur, con = conn()
-    query = "INSERT INTO {}{} VALUES {}".format(table, keys, value)
+    query = "INSERT INTO %s%s VALUES %s", (table, keys, value)
     print(query)
     cur.execute(query)
     con.commit()
@@ -46,7 +46,7 @@ def insert(table, keys, value):
 
 def update(table, sett, cond):
     cur, con = conn()
-    query = "UPDATE {} SET {} WHERE {}".format(table, sett, cond)
+    query = "UPDATE %s SET %s WHERE %s", (table, sett, cond)
     try:
         cur.execute(query)
         cur.close()
@@ -58,7 +58,7 @@ def update(table, sett, cond):
         return False
 def delete(table,cond):
     cur,con = conn()
-    query = "DELETE FROM {} WHERE {}".format(table,cond)
+    query = "DELETE FROM %s WHERE %s", (table,cond)
     try:
         cur.execute(query)
         cur.close()
