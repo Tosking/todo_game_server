@@ -43,6 +43,7 @@ def register():
     password = hashlib.sha256(request.form['password'].encode()).hexdigest()
     name = request.form['name']
     name = trim(name)
+    print("Name:",name)
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
     access_token = db.get_token(email)
     result = db.insert("user", "(name, email, password, creation_date, token)", str((name, email, password, creation_date,access_token)))
@@ -88,7 +89,23 @@ def create_list():
         return str(result)
     else:
         return "502"
-
+    
+@app.route('/delete/list', methods=['POST'])
+@jwt_required()
+def delete_list():
+    idd = request.form['id']
+    name = request.form['name']
+    user = db.fetch('user', cond='id = {}'.format(idd))
+    lists = db.fetch('list',cond="user = {} AND name = '{}'".format(idd,name))
+    if user and lists:
+        name = trim(name)
+        if name == "":
+            return '400'
+        result = db.delete('list', cond="user = {} AND name = '{}'".format(idd,name))
+        return "List is deleted successfully",200
+    else:
+        return "Bad gateway",502
+    
 @app.route('/create/task', methods=['POST'])
 @jwt_required()
 def create_task():
@@ -117,14 +134,10 @@ def create_task():
     keys += ")"
     return db.insert("task", keys, str(list(value)))
 '''
-@app.route('/delete/list', methods=['POST'])
-@jwt_required()
-def delete_list():
-    None
 
 @app.route('/delete/task', methods=['POST'])
 @jwt_required()
-def delete_list():
+def delete_task():
     None
 
 @app.route('/get/task', methods=['POST'])

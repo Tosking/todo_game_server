@@ -15,22 +15,22 @@ def conn():
 
 def fetch(table, cond=None,row='*'):
     cur, con = conn()
-    query = "SELECT %s FROM %s", (row, table, )
+    query = "SELECT {} FROM {}".format (row, table, )
     if cond != None:
-        query += " WHERE %s", (cond, )
+        query += " WHERE {}".format(cond,)
     print(query)
     cur.execute(query)
     result = cur.fetchall()
     cur.close()
     con.close()
-    if result == None:
+    if result == None or result ==[]:
         return False
     else:
         return result[0]
 
 def insert(table, keys, value):
     cur, con = conn()
-    query = "INSERT INTO %s%s VALUES %s", (table, keys, value)
+    query = "INSERT INTO {}{} VALUES {}".format(table,keys,value)
     print(query)
     cur.execute(query)
     con.commit()
@@ -43,12 +43,13 @@ def insert(table, keys, value):
         con.close()
         return False
 
-
-def update(table, sett, cond):
-    cur, con = conn()
-    query = "UPDATE %s SET %s WHERE %s", (table, sett, cond)
+def delete(table,cond):
+    cur,con = conn()
+    query = "DELETE FROM `{}` WHERE {}".format(table,cond)
+    print(query)
     try:
         cur.execute(query)
+        con.commit()
         cur.close()
         con.close()
         return True
@@ -56,9 +57,10 @@ def update(table, sett, cond):
         cur.close()
         con.close()
         return False
-def delete(table,cond):
-    cur,con = conn()
-    query = "DELETE FROM %s WHERE %s", (table,cond)
+
+def update(table, sett, cond):
+    cur, con = conn()
+    query = "UPDATE %s SET %s WHERE %s", (table, sett, cond)
     try:
         cur.execute(query)
         cur.close()
