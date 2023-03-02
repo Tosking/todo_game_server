@@ -74,12 +74,13 @@ def get_list():
 @app.route('/create/list', methods=['POST'])
 @jwt_required()
 def create_list():
+    login = get_jwt_identity()
     idd = request.form['id']
     user = db.fetch('user', cond='id = {}'.format(idd))
     print(user)
     if user:
-        if request.form['token'] != user[1]:
-            return '401'
+        if(login !=user[3]):
+            return "Wrong!",400
         name = request.form['name']
         name = trim(name)
         if name == "":
@@ -93,11 +94,14 @@ def create_list():
 @app.route('/delete/list', methods=['POST'])
 @jwt_required()
 def delete_list():
+    login = get_jwt_identity()
     idd = request.form['id']
     name = request.form['name']
     user = db.fetch('user', cond='id = {}'.format(idd))
     lists = db.fetch('list',cond="user = {} AND name = '{}'".format(idd,name))
     if user and lists:
+        if(login !=user[3]):
+            return "Wrong!",400
         name = trim(name)
         if name == "":
             return '400'
@@ -109,6 +113,10 @@ def delete_list():
 @app.route('/create/task', methods=['POST'])
 @jwt_required()
 def create_task():
+    login = get_jwt_identity()
+    user = db.fetch('user', cond='id = {}'.format(request.form['id']))
+    if not user and login != user[3]:
+        return "Wrong!",400
     keys = "(name, list, creation_date"
     id = request.form["id"]
     token = create_access_token(identity = id,expires_delta=24)
