@@ -60,9 +60,11 @@ def delete(table,cond):
 
 def update(table, sett, cond):
     cur, con = conn()
-    query = "UPDATE %s SET %s WHERE %s", (table, sett, cond)
+    query = "UPDATE `{}` SET {} WHERE {}".format(table, sett, cond)
+    print(query)
     try:
         cur.execute(query)
+        con.commit()
         cur.close()
         con.close()
         return True

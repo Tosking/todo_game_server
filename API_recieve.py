@@ -109,7 +109,22 @@ def delete_list():
         return "List is deleted successfully",200
     else:
         return "Bad gateway",502
+@app.route('/change/email', methods=['POST'])
+@jwt_required()
+def change_email():
+    login = str(get_jwt_identity())
+    newuseremail = request.form['email']
+    user = db.fetch(table ='user', cond='email = "{}"'.format(login))
+    if not user:
+        return "Wrong!",400
+    else:
+        result = db.update(table='user',sett='`email` = "{}"'.format(newuseremail),cond = '`email` = "{}"'.format(login))
+        if result:
+            return "Email is change successfully!",200
+        else:
+            return "Bad gateway",502
     
+
 @app.route('/create/task', methods=['POST'])
 @jwt_required()
 def create_task():
