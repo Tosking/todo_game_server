@@ -115,12 +115,31 @@ def change_email():
     login = str(get_jwt_identity())
     newuseremail = request.form['email']
     user = db.fetch(table ='user', cond='email = "{}"'.format(login))
+    print(login)
     if not user:
         return "Wrong!",400
+    if(login !=user[3]):
+        return "Wrong!!",400
     else:
         result = db.update(table='user',sett='`email` = "{}"'.format(newuseremail),cond = '`email` = "{}"'.format(login))
         if result:
-            return "Email is change successfully!",200
+            access_token =db.get_token(newuseremail)
+            return jsonify(access_token=access_token),200
+        else:
+            return "Bad gateway",502
+@app.route('/change/name', methods=['POST'])
+@jwt_required()
+def change_name():
+    login = str(get_jwt_identity())
+    newname = request.form['name']
+    user = db.fetch(table ='user', cond='email = "{}"'.format(login))
+    print(user)
+    if not user:
+        return "Wrong!",400
+    else:
+        result = db.update(table='user',sett='`name` = "{}"'.format(newname),cond = '`email` = "{}"'.format(login))
+        if result:
+            return "Name is change successfully!",200
         else:
             return "Bad gateway",502
     
