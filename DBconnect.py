@@ -77,3 +77,8 @@ def get_token(id ,expire_time=24):
     expire_delta = timedelta(expire_time)
     token = create_access_token(identity = id,expires_delta=expire_delta)
     return token
+
+def verify_token(login, idd):
+    user = db.fetch('user', cond='id = {}'.format(idd))
+    if not user and login != user[3]:
+        return True

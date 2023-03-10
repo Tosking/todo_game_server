@@ -10,12 +10,6 @@ import re
 app = Blueprint('api_recieve', __name__)
 con = db.conn()
 
-'''
-TODO:
-1)удаление листа
-2)удаление задачи
-3)получение задачи
-'''
 
 def trim(s):
     re.sub(r'/[^a-z\d\-\s]/gi', '', s)
@@ -59,17 +53,15 @@ def get_list():
     login = get_jwt_identity()
     idd = request.form['id']
     user = db.fetch('user', cond='id = {}'.format(idd))
-    if(login !=user[3]):
-        return "Wrong!",400
-    print("User:",user)
-    if user:
-        if request.form['token'] != user[1]:
-            return '2'
-        listt = db.fetch('list', cond='user = {}'.format(user[0]))
-        if listt:
-            return jsonify(listt)
-        else:
-            return '0'
+    if db.verify_token(get_jwt_identity(), request.form["id"]):
+        return "Wrong!", 400
+    if request.form['token'] != user[1]:
+        return '2'
+    listt = db.fetch('list', cond='user = {}'.format(user[0]))
+    if listt:
+        return jsonify(listt)
+    else:
+        return '0'
 
 @app.route('/create/list', methods=['POST'])
 @jwt_required()
@@ -79,8 +71,8 @@ def create_list():
     user = db.fetch('user', cond='id = {}'.format(idd))
     print(user)
     if user:
-        if(login !=user[3]):
-            return "Wrong!",400
+        if db.verify_token(get_jwt_identity(), request.form["id"]):
+            return "Wrong!", 400
         name = request.form['name']
         name = trim(name)
         if name == "":
@@ -100,8 +92,8 @@ def delete_list():
     user = db.fetch('user', cond='id = {}'.format(idd))
     lists = db.fetch('list',cond="user = {} AND name = '{}'".format(idd,name))
     if user and lists:
-        if(login !=user[3]):
-            return "Wrong!",400
+        if db.verify_token(get_jwt_identity(), request.form["id"]):
+            return "Wrong!", 400
         name = trim(name)
         if name == "":
             return '400'
@@ -115,11 +107,8 @@ def change_email():
     login = str(get_jwt_identity())
     newuseremail = request.form['email']
     user = db.fetch(table ='user', cond='email = "{}"'.format(login))
-    print(login)
-    if not user:
-        return "Wrong!",400
-    if(login !=user[3]):
-        return "Wrong!!",400
+    if db.verify_token(get_jwt_identity(), request.form["id"]):
+        return "Wrong!", 400
     else:
         result = db.update(table='user',sett='`email` = "{}"'.format(newuseremail),cond = '`email` = "{}"'.format(login))
         if result:
@@ -130,6 +119,8 @@ def change_email():
 @app.route('/change/name', methods=['POST'])
 @jwt_required()
 def change_name():
+    if db.verify_token(get_jwt_identity(), request.form["id"]):
+        return "Wrong!", 400
     login = str(get_jwt_identity())
     newname = request.form['name']
     user = db.fetch(table ='user', cond='email = "{}"'.format(login))
@@ -139,7 +130,7 @@ def change_name():
     else:
         result = db.update(table='user',sett='`name` = "{}"'.format(newname),cond = '`email` = "{}"'.format(login))
         if result:
-            return "Name is change successfully!",200
+            return "Success",200
         else:
             return "Bad gateway",502
     
@@ -147,10 +138,8 @@ def change_name():
 @app.route('/create/task', methods=['POST'])
 @jwt_required()
 def create_task():
-    login = get_jwt_identity()
-    user = db.fetch('user', cond='id = {}'.format(request.form['id']))
-    if not user and login != user[3]:
-        return "Wrong!",400
+    if db.verify_token(get_jwt_identity(), request.form["id"]):
+        return "Wrong!", 400
     keys = "(name, list, creation_date"
     id = request.form["id"]
     token = create_access_token(identity = id,expires_delta=24)
@@ -175,15 +164,19 @@ def create_task():
         value.append(deadline)
     keys += ")"
     return db.insert("task", keys, str(list(value)))
-'''
 
 @app.route('/delete/task', methods=['POST'])
 @jwt_required()
 def delete_task():
-    None
+    if db.verify_token(get_jwt_identity(), request.form["id"]):
+        return "Wrong!", 400
+    task = request.form["task"]
+    db.delete("task", "id = {}".format(task))
+    return "Success", 200
 
+#TODO: complete get task method
 @app.route('/get/task', methods=['POST'])
 @jwt_required()
 def delete_list():
-    None
-'''
+    if db.verify_token(get_jwt_identity(), request.form["id"]):
+        return "Wrong!", 400
