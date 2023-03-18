@@ -19,11 +19,14 @@ def trim(s):
 
 @app.route('/login', methods=['POST'])
 def login():
-    login = request.form['email']
-    password = hashlib.sha256(request.form['password'].encode()).hexdigest()
+    data = request.get_json()
+    login = data['email']
+    password = hashlib.sha256(data['password'].encode()).hexdigest()
     result = db.fetch("user", "email = '{}' AND password = '{}'".format(login, password))
     access_token =db.get_token(login)
+    print(result)
     if result != None:
+        print(jsonify(access_token=access_token))
         return jsonify(access_token=access_token)
     else:
         return jsonify("Wrong username or password"), 401
@@ -177,6 +180,6 @@ def delete_task():
 #TODO: complete get task method
 @app.route('/get/task', methods=['POST'])
 @jwt_required()
-def delete_list():
+def get_task():
     if db.verify_token(get_jwt_identity(), request.form["id"]):
         return "Wrong!", 400
