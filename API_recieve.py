@@ -19,7 +19,7 @@ def trim(s):
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
+    data = request.json
     login = data['email']
     password = hashlib.sha256(data['password'].encode()).hexdigest()
     result = db.fetch("user", "email = '{}' AND password = '{}'".format(login, password))
@@ -33,12 +33,13 @@ def login():
 
 @app.route('/register', methods=['POST'])
 def register():
+    data = request.get_json()
     regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
-    email = request.form['email']
+    email = data['email']
     if not re.fullmatch(regex, email):
         return '400'
-    password = hashlib.sha256(request.form['password'].encode()).hexdigest()
-    name = request.form['name']
+    password = hashlib.sha256(data['password'].encode()).hexdigest()
+    name = data['name']
     name = trim(name)
     print("Name:",name)
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -53,12 +54,13 @@ def register():
 @app.route('/get/list', methods=['POST'])
 @jwt_required()
 def get_list():
+    data = request.get_json()
     login = get_jwt_identity()
-    idd = request.form['id']
+    idd = data['id']
     user = db.fetch('user', cond='id = {}'.format(idd))
-    if db.verify_token(get_jwt_identity(), request.form["id"]):
+    if db.verify_token(get_jwt_identity(), idd):
         return "Wrong!", 400
-    if request.form['token'] != user[1]:
+    if data['token'] != user[1]:
         return '2'
     listt = db.fetch('list', cond='user = {}'.format(user[0]))
     if listt:
@@ -69,14 +71,15 @@ def get_list():
 @app.route('/create/list', methods=['POST'])
 @jwt_required()
 def create_list():
+    data = request.get_json()
     login = get_jwt_identity()
-    idd = request.form['id']
+    idd = data['id']
     user = db.fetch('user', cond='id = {}'.format(idd))
     print(user)
     if user:
-        if db.verify_token(get_jwt_identity(), request.form["id"]):
+        if db.verify_token(get_jwt_identity(), data["id"]):
             return "Wrong!", 400
-        name = request.form['name']
+        name = data['name']
         name = trim(name)
         if name == "":
             return '400'
@@ -89,13 +92,14 @@ def create_list():
 @app.route('/delete/list', methods=['POST'])
 @jwt_required()
 def delete_list():
+    data = request.get_json()
     login = get_jwt_identity()
-    idd = request.form['id']
-    name = request.form['name']
+    idd = data['id']
+    name = data['name']
     user = db.fetch('user', cond='id = {}'.format(idd))
     lists = db.fetch('list',cond="user = {} AND name = '{}'".format(idd,name))
     if user and lists:
-        if db.verify_token(get_jwt_identity(), request.form["id"]):
+        if db.verify_token(get_jwt_identity(), data["id"]):
             return "Wrong!", 400
         name = trim(name)
         if name == "":
@@ -104,13 +108,15 @@ def delete_list():
         return "List is deleted successfully",200
     else:
         return "Bad gateway",502
+
 @app.route('/change/email', methods=['POST'])
 @jwt_required()
 def change_email():
+    data = request.get_json()
     login = str(get_jwt_identity())
-    newuseremail = request.form['email']
+    newuseremail = data['email']
     user = db.fetch(table ='user', cond='email = "{}"'.format(login))
-    if db.verify_token(get_jwt_identity(), request.form["id"]):
+    if db.verify_token(get_jwt_identity(), data["id"]):
         return "Wrong!", 400
     else:
         result = db.update(table='user',sett='`email` = "{}"'.format(newuseremail),cond = '`email` = "{}"'.format(login))
@@ -122,10 +128,11 @@ def change_email():
 @app.route('/change/name', methods=['POST'])
 @jwt_required()
 def change_name():
-    if db.verify_token(get_jwt_identity(), request.form["id"]):
+    data = request.get_json()
+    if db.verify_token(get_jwt_identity(), data["id"]):
         return "Wrong!", 400
     login = str(get_jwt_identity())
-    newname = request.form['name']
+    newname = data['name']
     user = db.fetch(table ='user', cond='email = "{}"'.format(login))
     print(user)
     if not user:
@@ -141,28 +148,29 @@ def change_name():
 @app.route('/create/task', methods=['POST'])
 @jwt_required()
 def create_task():
-    if db.verify_token(get_jwt_identity(), request.form["id"]):
+    data = request.get_json()
+    id = data['id']
+    if db.verify_token(get_jwt_identity(), id):
         return "Wrong!", 400
     keys = "(name, list, creation_date"
-    id = request.form["id"]
     token = create_access_token(identity = id,expires_delta=24)
-    name = request.form["name"]
+    name = data["name"]
     name = trim(name)
     if name == "":
         return '400'
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
-    listt = request.form["list"]
+    listt = data["list"]
     value = [name, listt, creation_date]
-    if "task" in request.form:
-        task = request.form["task"]
+    if "task" in data:
+        task = data["task"]
         keys += ", task"
         value.append(task)
-    if "content" in request.form:
-        content = request.form["content"]
+    if "content" in data:
+        content = data["content"]
         keys += ", content"
         value.append(content)
-    if "deadline" in request.form:
-        deadline = request.form["deadline"]
+    if "deadline" in data:
+        deadline = data["deadline"]
         keys += ", deadline"
         value.append(deadline)
     keys += ")"
@@ -171,9 +179,11 @@ def create_task():
 @app.route('/delete/task', methods=['POST'])
 @jwt_required()
 def delete_task():
-    if db.verify_token(get_jwt_identity(), request.form["id"]):
+    data = request.get_json()
+    id = data["id"]
+    if db.verify_token(get_jwt_identity(), id):
         return "Wrong!", 400
-    task = request.form["task"]
+    task = data["task"]
     db.delete("task", "id = {}".format(task))
     return "Success", 200
 
@@ -181,5 +191,6 @@ def delete_task():
 @app.route('/get/task', methods=['POST'])
 @jwt_required()
 def get_task():
-    if db.verify_token(get_jwt_identity(), request.form["id"]):
+    data = request.get_json()
+    if db.verify_token(get_jwt_identity(), data["id"]):
         return "Wrong!", 400

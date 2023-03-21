@@ -79,6 +79,11 @@ def get_token(id ,expire_time=24):
     return token
 
 def verify_token(login, idd):
-    user = db.fetch('user', cond='id = {}'.format(idd))
-    if not user and login != user[3]:
+    #user = fetch('user', cond='id = {}'.format(idd))
+    query = "SELECT {} FROM {}".format ('*', 'user', )
+    query += " WHERE {}".format(idd)
+    print(query)
+    if not query and login != query[3]:
         return True
+    else:
+        return False
