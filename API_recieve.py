@@ -27,7 +27,7 @@ def login():
     print(result)
     if result != None:
         print(jsonify(access_token=access_token))
-        return jsonify(access_token=access_token)
+        return jsonify(access_token=access_token, id = result[0])
     else:
         return jsonify("Wrong username or password"), 401
 
@@ -47,7 +47,7 @@ def register():
     result = db.insert("user", "(name, email, password, creation_date, token)", str((name, email, password, creation_date,access_token)))
     print(access_token)
     if result:
-        return "Access registration",200
+        return jsonify(access_token=access_token, id = result[0])
     else:
         return jsonify("Wrong username or password"), 401
 
