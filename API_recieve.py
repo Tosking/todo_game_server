@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-from flask import *
 import DBconnect as db
 import hashlib
 import time
+import re
 from flask_jwt_extended import create_access_token,get_jwt_identity,jwt_required
 from datetime import timedelta
-import re
+from flask import *
+
 
 app = Blueprint('api_recieve', __name__)
 con = db.conn()
-
 
 def trim(s):
     re.sub(r'/[^a-z\d\-\s]/gi', '', s)
@@ -21,25 +21,29 @@ def trim(s):
 def login():
     data = request.json
     login = data['email']
+    if len(str(data['password'])) == 0 or len(str(data['email'])) ==0:
+        return jsonify("Wrong, username or password is empty"), 401
     password = hashlib.sha256(data['password'].encode()).hexdigest()
     result = db.fetch("user", "email = '{}' AND password = '{}'".format(login, password))
     access_token =db.get_token(login)
-    print(result)
-    if result != None:
+    print(result )
+    if result != None and result != False:
         print(jsonify(access_token=access_token))
-        return jsonify(access_token=access_token, id = result[0])
+        return jsonify(access_token=access_token)
     else:
         return jsonify("Wrong username or password"), 401
 
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
+    name = data['name']
     regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
     email = data['email']
+    if len(str(data['password'])) == 0 or len(str(data['email'])) == 0 or len(str(data['name'])) == 0:
+        return jsonify("Incorrect input data!"), 401
     if not re.fullmatch(regex, email):
         return '400'
     password = hashlib.sha256(data['password'].encode()).hexdigest()
-    name = data['name']
     name = trim(name)
     print("Name:",name)
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -47,7 +51,7 @@ def register():
     result = db.insert("user", "(name, email, password, creation_date, token)", str((name, email, password, creation_date,access_token)))
     print(access_token)
     if result:
-        return jsonify(access_token=access_token, id = result[0])
+        return jsonify(access_token=access_token)
     else:
         return jsonify("Wrong username or password"), 401
 

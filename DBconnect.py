@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import mysql.connector as mysql
+
 from flask_jwt_extended import create_access_token
 from datetime import timedelta
 
