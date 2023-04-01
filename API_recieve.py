@@ -5,6 +5,7 @@ import time
 import re
 from flask_jwt_extended import create_access_token,get_jwt_identity,jwt_required
 from datetime import timedelta
+import datetime
 from flask import *
 
 
@@ -26,7 +27,7 @@ def login():
     password = hashlib.sha256(data['password'].encode()).hexdigest()
     result = db.fetch("user", "email = '{}' AND password = '{}'".format(login, password))
     access_token =db.get_token(login)
-    print(result )
+    print(result)
     if result != None and result != False:
         print(jsonify(access_token=access_token))
         return jsonify(access_token=access_token)
@@ -157,7 +158,7 @@ def create_task():
     if db.verify_token(get_jwt_identity(), id):
         return "Wrong!", 400
     keys = "(name, list, creation_date"
-    token = create_access_token(identity = id,expires_delta=24)
+    token = db.get_token(id)
     name = data["name"]
     name = trim(name)
     if name == "":
@@ -178,7 +179,10 @@ def create_task():
         keys += ", deadline"
         value.append(deadline)
     keys += ")"
-    return db.insert("task", keys, str(list(value)))
+    value = str(value)
+    value = value.replace('[','(')
+    value = value.replace(']',')')
+    return db.insert("task", keys, value)
 
 @app.route('/delete/task', methods=['POST'])
 @jwt_required()
