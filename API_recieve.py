@@ -29,7 +29,7 @@ def login():
     access_token =db.get_token(login)
     print(result)
     if result != None and result != False:
-        print(jsonify(access_token=access_token), id = result[0])
+        print(jsonify(access_token=access_token))
         return jsonify(access_token=access_token)
     else:
         return jsonify("Wrong username or password"), 401
@@ -37,7 +37,6 @@ def login():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    print(data)
     name = data['name']
     regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
     email = data['email']
@@ -53,7 +52,7 @@ def register():
     result = db.insert("user", "(name, email, password, creation_date, token)", str((name, email, password, creation_date,access_token)))
     print(access_token)
     if result:
-        return jsonify(access_token=access_token, id= result[0])
+        return jsonify(access_token=access_token)
     else:
         return jsonify("Wrong username or password"), 401
 
@@ -196,10 +195,25 @@ def delete_task():
     db.delete("task", "id = {}".format(task))
     return "Success", 200
 
-#TODO: complete get task method
+
 @app.route('/get/task', methods=['POST'])
 @jwt_required()
 def get_task():
     data = request.get_json()
+    id = data['id']
+    namelist=data['name']
+    nametask = data['task']
     if db.verify_token(get_jwt_identity(), data["id"]):
         return "Wrong!", 400
+    user = db.fetch('user', cond='id = {}'.format(id))
+    listt = db.fetch('`list`', cond="`user` = {} AND `name` = '{}'".format(user[0],namelist))
+    if listt:
+       task =  db.fetch('`task`', cond='`name` = "{}" AND `content` = "{}" AND `list` = {}'.format(namelist,nametask,listt[0]))
+       if task:
+           return jsonify(task)
+       else:
+            return "Bad gateway",502
+    else:
+        return "Bad gateway",502
+    
+    
