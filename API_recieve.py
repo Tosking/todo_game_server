@@ -11,6 +11,7 @@ from flask import *
 
 app = Blueprint('api_recieve', __name__)
 con = db.conn()
+user_id = 0
 
 def trim(s):
     re.sub(r'/[^a-z\d\-\s]/gi', '', s)
@@ -27,6 +28,7 @@ def login():
     password = hashlib.sha256(data['password'].encode()).hexdigest()
     result = db.fetch("user", "email = '{}' AND password = '{}'".format(login, password))
     access_token =db.get_token(login)
+    
     print(result)
     if result != None and result != False:
         print(jsonify(access_token=access_token))
@@ -46,12 +48,11 @@ def register():
         return '400'
     password = hashlib.sha256(data['password'].encode()).hexdigest()
     name = trim(name)
-    print("Name:",name)
     creation_date = time.strftime('%Y-%m-%d %H:%M:%S')
     access_token = db.get_token(email)
     result = db.insert("user", "(name, email, password, creation_date, token)", str((name, email, password, creation_date,access_token)))
-    print(access_token)
     if result:
+        result = db.fetch("user", "email = '{}' AND password = '{}'".format(email, password))
         return jsonify(access_token=access_token, id=result[0])
     else:
         return jsonify("Wrong username or password"), 401
