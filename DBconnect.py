@@ -26,8 +26,7 @@ def fetch(table, cond=None,row='*'):
     con.close()
     if result == None or result ==[]:
         return False
-    else:
-        return result[0]
+    return result[0]
 
 def insert(table, keys, value):
     cur, con = conn()
@@ -39,10 +38,9 @@ def insert(table, keys, value):
         cur.close()
         con.close()
         return True
-    else:
-        cur.close()
-        con.close()
-        return False
+    cur.close()
+    con.close()
+    return False
 
 def delete(table,cond):
     cur,con = conn()
@@ -75,16 +73,15 @@ def update(table, sett, cond):
         return False
 
 def get_token(id ,expire_time=24):
-    expire_delta = timedelta(expire_time)
-    token = create_access_token(identity = id,expires_delta=expire_delta)
-    return token
+    return create_access_token(identity = id,expires_delta=timedelta(expire_time))
 
 def verify_token(login, idd):
-    #user = fetch('user', cond='id = {}'.format(idd))
+    
     query = "SELECT {} FROM {}".format ('*', 'user', )
     query += " WHERE {}".format(idd)
+    print("Method verify_token\n Token: ")
+
     print(query)
     if not query and login != query[3]:
         return True
-    else:
-        return False
+    return False

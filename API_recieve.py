@@ -3,15 +3,14 @@ import DBconnect as db
 import hashlib
 import time
 import re
-from flask_jwt_extended import create_access_token,get_jwt_identity,jwt_required
-from datetime import timedelta
-import datetime
+from flask_jwt_extended import get_jwt_identity,jwt_required
 from flask import *
 
 
 app = Blueprint('api_recieve', __name__)
 con = db.conn()
 user_id = 0
+data = None
 
 def trim(s):
     re.sub(r'/[^a-z\d\-\s]/gi', '', s)
@@ -21,7 +20,7 @@ def trim(s):
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.json
+    data = request.get_json()
     login = data['email']
     if len(str(data['password'])) == 0 or len(str(data['email'])) ==0:
         return jsonify("Wrong, username or password is empty"), 401
@@ -93,7 +92,7 @@ def create_list():
         result = db.insert('list', '(name, creation_date, user)', str((name, creation_date, idd)))
         return str(result)
     else:
-        return "502"
+        return "Bad gateway",502
     
 @app.route('/delete/list', methods=['POST'])
 @jwt_required()
@@ -131,6 +130,7 @@ def change_email():
             return jsonify(access_token=access_token),200
         else:
             return "Bad gateway",502
+
 @app.route('/change/name', methods=['POST'])
 @jwt_required()
 def change_name():
@@ -212,9 +212,6 @@ def get_task():
        task =  db.fetch('`task`', cond='`name` = "{}" AND `content` = "{}" AND `list` = {}'.format(namelist,nametask,listt[0]))
        if task:
            return jsonify(task)
-       else:
-            return "Bad gateway",502
-    else:
-        return "Bad gateway",502
+    return "Bad gateway",502
     
     
