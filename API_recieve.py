@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import DBconnect as db
+from DBconnect import DataBaseConnect
 import hashlib
 import time
 import re
@@ -8,7 +8,7 @@ from flask import *
 
 
 app = Blueprint('api_recieve', __name__)
-con = db.conn()
+db = DataBaseConnect()
 user_id = 0
 data = None
 
@@ -27,7 +27,6 @@ def login():
     password = hashlib.sha256(data['password'].encode()).hexdigest()
     result = db.fetch("user", "email = '{}' AND password = '{}'".format(login, password))
     access_token =db.get_token(login)
-    
     print(result)
     if result != None and result != False:
         print(jsonify(access_token=access_token))
@@ -63,7 +62,7 @@ def get_list():
     login = get_jwt_identity()
     idd = data['id']
     user = db.fetch('user', cond='id = {}'.format(idd))
-    if db.verify_token(get_jwt_identity(), idd):
+    if db.verify_token(login, idd):
         return "Wrong!", 400
     if data['token'] != user[1]:
         return '2'
@@ -82,7 +81,7 @@ def create_list():
     user = db.fetch('user', cond='id = {}'.format(idd))
     print(user)
     if user:
-        if db.verify_token(get_jwt_identity(), data["id"]):
+        if db.verify_token(login, data["id"]):
             return "Wrong!", 400
         name = data['name']
         name = trim(name)
@@ -104,15 +103,15 @@ def delete_list():
     user = db.fetch('user', cond='id = {}'.format(idd))
     lists = db.fetch('list',cond="user = {} AND name = '{}'".format(idd,name))
     if user and lists:
-        if db.verify_token(get_jwt_identity(), data["id"]):
+        if db.verify_token(login, data["id"]):
             return "Wrong!", 400
         name = trim(name)
         if name == "":
             return '400'
         result = db.delete('list', cond="user = {} AND name = '{}'".format(idd,name))
-        return "List is deleted successfully",200
-    else:
-        return "Bad gateway",502
+        if result:
+            return "List is deleted successfully",200
+    return "Bad gateway",502
 
 @app.route('/change/email', methods=['POST'])
 @jwt_required()
