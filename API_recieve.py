@@ -5,6 +5,7 @@ import time
 import re
 from flask_jwt_extended import get_jwt_identity,jwt_required
 from flask import *
+from flask_cors import cross_origin
 
 
 app = Blueprint('api_recieve', __name__)
@@ -18,7 +19,9 @@ def trim(s):
     re.sub(r'/[^a-z\d]+$/i', '', s)
     return s
 
+
 @app.route('/login', methods=['POST'])
+@cross_origin()
 def login():
     data = request.get_json()
     login = data['email']
@@ -35,6 +38,7 @@ def login():
         return jsonify("Wrong username or password"), 401
 
 @app.route('/register', methods=['POST'])
+@cross_origin()
 def register():
     data = request.get_json()
     name = data['name']
@@ -56,6 +60,7 @@ def register():
         return jsonify("Wrong username or password"), 401
 
 @app.route('/get/list', methods=['POST'])
+@cross_origin()
 @jwt_required()
 def get_list():
     data = request.get_json()
@@ -73,6 +78,7 @@ def get_list():
         return '0'
 
 @app.route('/create/list', methods=['POST'])
+@cross_origin()
 @jwt_required()
 def create_list():
     data = request.get_json()
@@ -94,6 +100,7 @@ def create_list():
         return "Bad gateway",502
     
 @app.route('/delete/list', methods=['POST'])
+@cross_origin()
 @jwt_required()
 def delete_list():
     data = request.get_json()
@@ -114,6 +121,7 @@ def delete_list():
     return "Bad gateway",502
 
 @app.route('/change/email', methods=['POST'])
+@cross_origin()
 @jwt_required()
 def change_email():
     data = request.get_json()
@@ -131,6 +139,7 @@ def change_email():
             return "Bad gateway",502
 
 @app.route('/change/name', methods=['POST'])
+@cross_origin()
 @jwt_required()
 def change_name():
     data = request.get_json()
@@ -151,6 +160,7 @@ def change_name():
     
 
 @app.route('/create/task', methods=['POST'])
+@cross_origin()
 @jwt_required()
 def create_task():
     data = request.get_json()
@@ -185,6 +195,7 @@ def create_task():
     return db.insert("task", keys, value)
 
 @app.route('/delete/task', methods=['POST'])
+@cross_origin()
 @jwt_required()
 def delete_task():
     data = request.get_json()
@@ -197,6 +208,7 @@ def delete_task():
 
 
 @app.route('/get/task', methods=['POST'])
+@cross_origin()
 @jwt_required()
 def get_task():
     data = request.get_json()
